@@ -28,7 +28,7 @@ I haven't code for a while so the whole thing is actually being written by GPT4 
 
 This is not meant to be something serious, just something you can play with to understand a bit how it works.
 
-**What would be cool to do next?**
+**What would be cool to do next and future evolution?**
 
 Add something that avoids JSPHPer to search into the files after every query. Once a file is scanned and cosine similarity are matched for some query it would be nice to save info somewhere. In this way it will slowly add knowledge on a specific domain if the question gravitates around that and would be able to accept more things as context maybe scanning the file less often.
 

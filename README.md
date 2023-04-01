@@ -1,8 +1,13 @@
 # JSPHPer /ˈjæspər/.
-JSPHPer is a quite poor but very easy to use client for OpenAI ChatGPT with Embedding API enabled on text files. 
-It only uses JS &amp; PHP.
+JSPHPer is a quite poor but very easy to use and understand client for OpenAI ChatGPT with Embedding API enabled on text files. 
 
-You have 6 files and 1 folder for context.
+This means that every time a user perfom a query JSPHPer will first look into the files for some match than return what found to OpenAI Chat component as context.
+
+JSPHPer also remember conversation. The way is setup give 15% weight to previous conversation 15% weight to context files and the rest from the model.
+
+It only uses JS &amp; PHP plsu some text files so is quite easy to try almost everywhere even with no DB.
+
+You have 6 files and 1 folder where to put context files.
 
 - index.html with the main page
 - style.css 
@@ -11,6 +16,8 @@ You have 6 files and 1 folder for context.
 - embedding_api.php to perform the search within your text files
 - script.js to make things work in general
 - context/example.txt
+
+the more file you will add the slower every query will be.
 
 I haven't code for a while so the whole thing is actually being written by GPT4 itself, I just ask politely and guide a lot into the debugging.
 

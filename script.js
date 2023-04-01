@@ -3,7 +3,20 @@ const chatbox = document.getElementById('chatbox');
 const userInput = document.getElementById('user-input');
 
 const textFileUrls = [
-    'context/example.txt',
+    '/OpenAI/context/approach.txt',
+    '/OpenAI/context/attribution.txt',
+    '/OpenAI/context/auction.txt',
+    '/OpenAI/context/brandlift.txt',
+    '/OpenAI/context/capi.txt',
+    '/OpenAI/context/conversionlift.txt',
+    '/OpenAI/context/future.txt',
+    '/OpenAI/context/geolift.txt',
+    '/OpenAI/context/measurementvsreporting.txt',
+    '/OpenAI/context/mmm.txt',
+    '/OpenAI/context/pet.txt',
+    '/OpenAI/context/solutions.txt',
+    '/OpenAI/context/truevalue.txt',
+    //'/OpenAI/context/mel.csv',
 ];
 
 let conversationHistory = [];
@@ -48,7 +61,7 @@ chatForm.addEventListener('submit', async (e) => {
         alert('Error occurred: ' + gptResponse.error);
     } else {
         addMessageToChat('gpt', gptResponse.response);
-        conversationHistory.push('User: ' + message, 'GPT: ' + gptResponse.response);
+        conversationHistory.push('User: ' + message, 'JSPHPer: ' + gptResponse.response);
         console.log(conversationHistory);
     }
 
@@ -58,7 +71,7 @@ chatForm.addEventListener('submit', async (e) => {
 function addMessageToChat(sender, message) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('chat-message');
-    messageDiv.innerHTML = `<span class="${sender === 'user' ? 'user-message' : 'gpt-message'}">${sender === 'user' ? 'You: ' : 'GPT: '}</span>${message}`;
+    messageDiv.innerHTML = `<span class="${sender === 'user' ? 'user-message' : 'gpt-message'}">${sender === 'user' ? 'You: ' : 'JSPHPer: '}</span>${message}`;
     chatbox.appendChild(messageDiv);
     chatbox.scrollTop = chatbox.scrollHeight;
 }
@@ -87,9 +100,9 @@ async function fetchGPTResponse(prompt, additionalContexts) {
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
-  const weightedAdditionalContext = additionalContexts.map((content, index) => `MarsciDB ${index + 1}: ${content}`).join('\n');
+  const weightedAdditionalContext = additionalContexts.map((content, index) => `DB ${index + 1}: ${content}`).join('\n');
 
-  const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information MarsciDB and answer the user query without mentioning MarsciDB. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
+  const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information DB and answer the user query without mentioning DB. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
 
   const response = await fetch('gpt_api.php', {
     method: 'POST',

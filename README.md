@@ -23,8 +23,8 @@ I haven't code for a while so the whole thing is actually being written by GPT4 
 
 This is not meant to be something serious, just something you can play with to understand a bit how it works.
 
-What would be cool to do next?
+**What would be cool to do next?**
 
-Add something that avoid the Bot to search every query into the files, once a file is scanned and cosine similarity are matched for some query it would be nice to save info somewhere. In this way it will slowly add knowledge on a specific domain if the question gravitate around that and would be able to accept more things as context.
+Add something that avoids JSPHPer to search into the files after every query. Once a file is scanned and cosine similarity are matched for some query it would be nice to save info somewhere. In this way it will slowly add knowledge on a specific domain if the question gravitates around that and would be able to accept more things as context maybe scanning the file less often.
 
-Another idea is to store the info somewhere, maybe categorized instead that on txt files, to make the search way smarter.
+Another idea is to store the info in a structured DB, instead that on text files, to make the search way smarter.

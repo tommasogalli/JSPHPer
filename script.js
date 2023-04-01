@@ -3,20 +3,7 @@ const chatbox = document.getElementById('chatbox');
 const userInput = document.getElementById('user-input');
 
 const textFileUrls = [
-    '/OpenAI/context/approach.txt',
-    '/OpenAI/context/attribution.txt',
-    '/OpenAI/context/auction.txt',
-    '/OpenAI/context/brandlift.txt',
-    '/OpenAI/context/capi.txt',
-    '/OpenAI/context/conversionlift.txt',
-    '/OpenAI/context/future.txt',
-    '/OpenAI/context/geolift.txt',
-    '/OpenAI/context/measurementvsreporting.txt',
-    '/OpenAI/context/mmm.txt',
-    '/OpenAI/context/pet.txt',
-    '/OpenAI/context/solutions.txt',
-    '/OpenAI/context/truevalue.txt',
-    //'/OpenAI/context/mel.csv',
+    'context/example.txt',
 ];
 
 let conversationHistory = [];
@@ -100,9 +87,9 @@ async function fetchGPTResponse(prompt, additionalContexts) {
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
-  const weightedAdditionalContext = additionalContexts.map((content, index) => `DB ${index + 1}: ${content}`).join('\n');
+  const weightedAdditionalContext = additionalContexts.map((content, index) => `ContextFiles ${index + 1}: ${content}`).join('\n');
 
-  const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information DB and answer the user query without mentioning DB. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
+  const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information in the context files and answer the user query without mentioning the files. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
 
   const response = await fetch('gpt_api.php', {
     method: 'POST',

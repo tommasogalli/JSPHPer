@@ -19,6 +19,6 @@ You have 6 files and 1 folder where to put context files.
 
 the more file you will add the slower every query will be.
 
-I haven't code for a while so the whole thing is actually being written by GPT4 itself, I just ask politely and guide a lot into the debugging.
+I haven't code for a while so the whole thing is actually being written by GPT4 itself, I just ask politely and guide a lot GPT into the debugging phase.
 
 This is not meant to be something serious, just something you can play with to understand a bit how it works.

@@ -2,7 +2,7 @@
 JSPHPer is a quite poor but very easy to use client for OpenAI ChatGPT with Embedding API enabled on text files. 
 It only uses JS &amp; PHP.
 
-You have 5 files and 1 folder for context.
+You have 6 files and 1 folder for context.
 
 - index.html with the main page
 - style.css 

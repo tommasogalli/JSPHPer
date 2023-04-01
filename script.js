@@ -82,15 +82,14 @@ async function fetchTextFileContents(urls) {
 async function fetchGPTResponse(prompt, additionalContexts) {
   const conversationHistoryWithAdditionalContext = [...conversationHistory];
 
-  const conversationWeight = 0.15;
-  const additionalContextWeight = 0.15;
+  const conversationWeight = 0.20;
+  const additionalContextWeight = 0.30;
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
-  const weightedAdditionalContext = additionalContexts.map((content, index) => `ContextFiles ${index + 1}: ${content}`).join('\n');
+   const weightedAdditionalContext = additionalContexts.map((content, index) => `MarsciDB ${index + 1}: ${content}`).join('\n');
 
-  const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information in the context files and answer the user query without mentioning the files. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
-
+   const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information MarsciDB and answer the user query without mentioning MarsciDB. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
   const response = await fetch('gpt_api.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -186,7 +185,7 @@ async function searchTextFiles(query, documents) {
     scores.push({ ...doc, score: totalScore, snippet });
   }
 
-  const similarityThreshold = 9.5;
+  const similarityThreshold = 0;
   const filteredScores = scores.filter((item) => item.score > similarityThreshold);
 
   const rankedDocuments = filteredScores

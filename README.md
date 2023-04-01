@@ -4,9 +4,13 @@ JSPHPer is a quite poor, but very easy to use and understand, client for OpenAI 
 This means that every time a user perfom a query, JSPHPer will first look into the files for some match, than return what found to OpenAI Chat component as context.
 
 JSPHPer also remember previous conversations so you can chat with it. 
-The way is setup give 15% weight to previous conversation 15% weight to context files and the rest from the model.
+The way is setup give 20% weight to previous conversation 30% weight to context files and the rest from the model. You can customize that in the script.js.
 
 It only uses JS &amp; PHP plus some text files, so is quite easy to try almost everywhere even with no DB.
+
+Just put that in any webserver, set you api key in config.php (get one at https://platform.openai.com/overview) and you're good to go.
+
+You can test it asking the bot what JSPHPer is.
 
 You have 6 files and 1 folder where to put context files.
 
@@ -18,7 +22,7 @@ You have 6 files and 1 folder where to put context files.
 - script.js to make things work in general
 - context/example.txt
 
-the more file you will add the slower every query will be.
+You can add as many file as you want but the more file you will add the slower every query will be.
 
 I haven't code for a while so the whole thing is actually being written by GPT4 itself, I just ask politely and guide a lot GPT into the debugging phase.
 

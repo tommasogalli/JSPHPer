@@ -17,7 +17,7 @@ For the same reason while JSPHPer (or better OpenAI GPT3.5Turbo) will answer to 
 I haven't code for a while so, while I designed JSPHPer flow, all the code here is actually being written by GPT4 itself. 
 I just asked how I wanted this to work and guided GPT into writing the code and debugging.
 
-**IMPORTANT: This is not meant to be something serious, just something you can play with to understand a bit how Embedding works.**
+**IMPORTANT: This is not meant to be something serious, is just something you can play with to understand a bit how Embedding works.**
 
 
 **Install JSPHPer**
@@ -38,7 +38,7 @@ You have 6 files and 1 folder where to put context files.
 - script.js to make things work in general
 - context/example.txt
 
-You can add as many files as you want, JSPHPer will cache the file at the first query so later on it will be faster.
+You can add as many files as you want (add them in script.js), JSPHPer will cache the file at the first query so later on it will be faster.
 
 **What would be cool to do next and future evolution?**
 

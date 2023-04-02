@@ -72,7 +72,7 @@ async function fetchTextFileContents(urls) {
     urls.map(async (url) => {
       const response = await fetch(url);
       const content = await response.text();
-      console.log(`Fetched content from ${url}:`, countWords(content));
+      //console.log(`Fetched content from ${url}:`, countWords(content));
       return { fileName: url, content };
     })
   );
@@ -82,8 +82,8 @@ async function fetchTextFileContents(urls) {
 async function fetchGPTResponse(prompt, additionalContexts) {
   const conversationHistoryWithAdditionalContext = [...conversationHistory];
 
-  const conversationWeight = 0.20;
-  const additionalContextWeight = 0.30;
+  const conversationWeight = 0.15;
+  const additionalContextWeight = 0.15;
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
@@ -157,11 +157,14 @@ function getNgrams(text, n) {
 function filterStopwords(terms) {
   const stopwords = [
     'a', 'an', 'the',
-    'and', 'or', 'but', 'if', 'then', 'else', 'when',
+    'and', 'or', 'but', 'if', 'then', 'else', 'when','hi','hello',
     'at', 'by', 'from', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'of', 'over', 'under', 'again', 'further', 'in', 'on', 'off', 'out', 'as',
     'i', 'me', 'my', 'myself', 'we', 'us', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'will', 'would', 'should', 'can', 'could', 'ought', "i'm", "you're", "he's", "she's", "it's", "we're", "they're", "i've", "you've", "we've", "they've", "i'd", "you'd", "he'd", "she'd", "we'd", "they'd", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll", "isn't", "aren't", "wasn't", "weren't", "haven't", "hasn't", "hadn't", "doesn't", "don't", "didn't", "won't", "wouldn't", "shan't", "shouldn't", "can't", "cannot", "couldn't", 'mustn', "let's", 'ought', "that's", "who's", "what's", "here's", "there's", "when's", "where's", "why's", "how's", 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each',
     'few', 'more', 'most', 'several', 'some', 'such', 'only', 'own', 'other', 'than', 'too', 'very', 's', 't', 'just', 'don', "don't", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't", 'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't",
 ];
+
+const strippedTerms = terms.map(term => term.replace(/[^\w\s?]/g, '').toLowerCase());
+console.log(terms.filter(term => !stopwords.includes(term.toLowerCase())));
 return terms.filter(term => !stopwords.includes(term.toLowerCase()));
 }
 
@@ -174,31 +177,57 @@ function getChunks(text, n) {
   return chunks;
 }
 
+const embeddingCache = {};
+
 async function searchTextFiles(query, documents) {
+  const queryEmbedding = await fetchEmbedding([query]);
+
   // Include unigrams, bigrams, and trigrams
   const queryNgrams = [
     ...query.split(/\s+/),
-    ...getNgrams(query, 2),
-    ...getNgrams(query, 3),
+  //  ...getNgrams(query, 2),
+  //  ...getNgrams(query, 3),
   ].filter((term) => term.trim() !== "");
 
   // Filter out stopwords from the n-grams
   const filteredNgrams = filterStopwords(queryNgrams);
+
 
   if (filteredNgrams.length === 0) {
     return [];
   }
 
   const queryEmbeddings = await fetchEmbedding(filteredNgrams); // Use filteredNgrams here
-  const snippetSize = 100;
+  const chunkSize = 100;
 
   const scores = [];
+
   for (const doc of documents) {
     let maxScore = 0;
     let bestChunk = '';
 
-    const docNgrams = getChunks(doc.content, snippetSize);
-    const docEmbeddings = await fetchEmbedding(docNgrams);
+    const docNgrams = getChunks(doc.content, chunkSize);
+    let docEmbeddings;
+
+    if (!embeddingCache[doc.fileName]) {
+      docEmbeddings = await fetchEmbedding(docNgrams);
+      embeddingCache[doc.fileName] = {
+        embeddings: docEmbeddings,
+        cacheUsage: 0,
+      };
+      console.log('Fetched content from', doc.fileName);
+      console.log('Created cached embeddings for', doc.fileName);
+    } else {
+      embeddingCache[doc.fileName].cacheUsage++;
+      console.log(
+        'Using cached embeddings for',
+        doc.fileName,
+        'Cache usage:',
+        embeddingCache[doc.fileName].cacheUsage,
+      );
+    }
+
+    docEmbeddings = embeddingCache[doc.fileName].embeddings;
 
     const chunkScores = new Map();
 
@@ -218,10 +247,12 @@ async function searchTextFiles(query, documents) {
         }
       }
     }
-
+    let k=1;
     // Log the total score of each chunk
     chunkScores.forEach((totalScore, chunk) => {
-      console.log(`Chunk: ${chunk}, Total Score: ${totalScore}`);
+      console.log(`Chunk ${k}, Total Score: ${totalScore}`);
+      //console.log(`Chunk ${k}:${chunk}, Total Score: ${totalScore}`);
+      k++;
     });
 
     scores.push({ ...doc, score: maxScore, snippet: bestChunk });

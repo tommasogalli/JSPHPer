@@ -1,5 +1,5 @@
 # JSPHPer /ˈjæspər/.
-JSPHPer is a quite poor, but very easy to use and understand, client for OpenAI ChatGPT with Embedding API enabled on text files. 
+JSPHPer is a quite simple, but very easy to use and understand, client for OpenAI ChatGPT with Embedding API enabled to add context from text files. 
 
 This means that every time a user perfom a query, JSPHPer will first look into the files for some match, than return what found to OpenAI Chat component as context.
 

@@ -64,7 +64,7 @@ function call_openai_api($prompt, $conversation_history, $conversationWeight, $a
         'max_tokens' => 500,
         'n' => 1,
         //'stop' => ["\n"],
-        'temperature' => 0.3,
+        'temperature' => 0.7,
     ]);
 
     $options = [

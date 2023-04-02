@@ -87,9 +87,9 @@ async function fetchGPTResponse(prompt, additionalContexts) {
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
-   const weightedAdditionalContext = additionalContexts.map((content, index) => `MarsciDB ${index + 1}: ${content}`).join('\n');
+  const weightedAdditionalContext = additionalContexts.map((content, index) => `Additional Context ${index + 1}: ${content}`).join('\n');
 
-   const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nPlease find relevant information MarsciDB and answer the user query without mentioning MarsciDB. Always mix what you know with what is in the files. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
+   const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nFind relevant information in the Additional Context and answer the User query. Always mix what you know with what is in the Additional Context. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% Additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
   const response = await fetch('gpt_api.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -113,16 +113,21 @@ async function fetchGPTResponse(prompt, additionalContexts) {
 }
 
 async function fetchEmbedding(texts) {
-    const response = await fetch('embedding_api.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ texts })
-    });
+  const response = await fetch("embedding_api.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ texts }),
+  });
 
-    if (!response.ok) {
-    console.error('Error fetching embeddings:', response.status, response.statusText);
+  if (!response.ok) {
+    console.error(
+      "Error fetching embeddings:",
+      response.status,
+      response.statusText,
+      await response.text()
+    );
     return { embeddings: [] }; // Return an empty array if there's an error in the response
   }
 
@@ -131,9 +136,12 @@ async function fetchEmbedding(texts) {
 }
 
 function cosineSimilarity(a, b) {
+  if (!a || !b) return 0;
+
   const dotProduct = a.reduce((sum, value, index) => sum + value * b[index], 0);
   const aMagnitude = Math.sqrt(a.reduce((sum, value) => sum + value * value, 0));
   const bMagnitude = Math.sqrt(b.reduce((sum, value) => sum + value * value, 0));
+
   return dotProduct / (aMagnitude * bMagnitude);
 }
 
@@ -146,43 +154,77 @@ function getNgrams(text, n) {
   return ngrams;
 }
 
-function filterPrepositions(terms) {
-  const prepositions = ['in', 'at', 'on', 'of', 'for', 'with', 'about', 'as', 'by', 'to', 'from', 'up', 'down', 'over', 'under', 'between', 'among', 'through', 'during', 'before', 'after', 'above', 'below', 'across', 'along', 'beside', 'inside', 'outside', 'near', 'far', 'beyond', 'within', 'without', 'against', 'toward', 'towards', 'into', 'onto', 'off', 'except', 'since', 'upon'];
-  return terms.filter(term => !prepositions.includes(term.toLowerCase()));
+function filterStopwords(terms) {
+  const stopwords = [
+    'a', 'an', 'the',
+    'and', 'or', 'but', 'if', 'then', 'else', 'when',
+    'at', 'by', 'from', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'of', 'over', 'under', 'again', 'further', 'in', 'on', 'off', 'out', 'as',
+    'i', 'me', 'my', 'myself', 'we', 'us', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'will', 'would', 'should', 'can', 'could', 'ought', "i'm", "you're", "he's", "she's", "it's", "we're", "they're", "i've", "you've", "we've", "they've", "i'd", "you'd", "he'd", "she'd", "we'd", "they'd", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll", "isn't", "aren't", "wasn't", "weren't", "haven't", "hasn't", "hadn't", "doesn't", "don't", "didn't", "won't", "wouldn't", "shan't", "shouldn't", "can't", "cannot", "couldn't", 'mustn', "let's", 'ought', "that's", "who's", "what's", "here's", "there's", "when's", "where's", "why's", "how's", 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each',
+    'few', 'more', 'most', 'several', 'some', 'such', 'only', 'own', 'other', 'than', 'too', 'very', 's', 't', 'just', 'don', "don't", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't", 'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't",
+];
+return terms.filter(term => !stopwords.includes(term.toLowerCase()));
 }
 
-function getSnippet(content, position, snippetSize) {
-  const words = content.split(/\s+/);
-  const start = Math.max(0, position - snippetSize);
-  const end = Math.min(words.length, position + snippetSize);
-  return words.slice(start, end).join(' ');
+function getChunks(text, n) {
+  const words = text.split(/\s+/);
+  const chunks = [];
+  for (let i = 0; i < words.length; i += n) {
+    chunks.push(words.slice(i, i + n).join(' '));
+  }
+  return chunks;
 }
 
 async function searchTextFiles(query, documents) {
-  const queryNgrams = filterPrepositions([...getNgrams(query, 2), ...getNgrams(query, 3)]);
+  // Include unigrams, bigrams, and trigrams
+  const queryNgrams = [
+    ...query.split(/\s+/),
+    ...getNgrams(query, 2),
+    ...getNgrams(query, 3),
+  ].filter((term) => term.trim() !== "");
 
-  if (queryNgrams.length === 0) {
+  // Filter out stopwords from the n-grams
+  const filteredNgrams = filterStopwords(queryNgrams);
+
+  if (filteredNgrams.length === 0) {
     return [];
   }
 
-  const queryEmbeddings = await fetchEmbedding(queryNgrams);
+  const queryEmbeddings = await fetchEmbedding(filteredNgrams); // Use filteredNgrams here
   const snippetSize = 100;
 
   const scores = [];
   for (const doc of documents) {
-    let totalScore = 0;
-    const docNgrams = [doc.content];
+    let maxScore = 0;
+    let bestChunk = '';
+
+    const docNgrams = getChunks(doc.content, snippetSize);
     const docEmbeddings = await fetchEmbedding(docNgrams);
+
+    const chunkScores = new Map();
 
     for (let i = 0; i < queryNgrams.length; i++) {
       for (let j = 0; j < docNgrams.length; j++) {
-        const score = cosineSimilarity(queryEmbeddings.embeddings[i], docEmbeddings.embeddings[j]);
-        totalScore += score;
+        const score = cosineSimilarity(
+          queryEmbeddings.embeddings[i],
+          docEmbeddings.embeddings[j]
+        );
+
+        // Sum up the scores for each chunk
+        chunkScores.set(docNgrams[j], (chunkScores.get(docNgrams[j]) || 0) + score);
+
+        if (score > maxScore) {
+          maxScore = score;
+          bestChunk = docNgrams[j];
+        }
       }
     }
 
-    const snippet = getSnippet(doc.content, doc.content.indexOf(query), snippetSize);
-    scores.push({ ...doc, score: totalScore, snippet });
+    // Log the total score of each chunk
+    chunkScores.forEach((totalScore, chunk) => {
+      console.log(`Chunk: ${chunk}, Total Score: ${totalScore}`);
+    });
+
+    scores.push({ ...doc, score: maxScore, snippet: bestChunk });
   }
 
   const similarityThreshold = 0;
@@ -190,11 +232,7 @@ async function searchTextFiles(query, documents) {
 
   const rankedDocuments = filteredScores
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-
-  rankedDocuments.forEach((item) => {
-    console.log(`File name: ${item.fileName}, Text match: ${item.snippet}, Score: ${item.score}`);
-  });
+    .slice(0, 5);
 
   return rankedDocuments.map((item) => item.snippet);
 }

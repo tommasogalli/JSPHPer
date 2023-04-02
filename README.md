@@ -12,7 +12,9 @@ The way the tool works with Embedding and custom query is such that it is meant 
 For the same reason while JSPHPer (or better OpenAI GPT3.5Turbo) will answer to any question, this should be used and make sense to chat on the domain of the context files since it will always try to use the context.
 
 **Fun Fact & Disclaimer**
-I haven't code for a while so while i set the rules all the code here is actually being written by GPT4 itself. I just asked how I wanted this to work and guided GPT into the writing and debugging phase of the function I wanted to implement.. and GPT4 did the rest!
+
+I haven't code for a while so, while I designed the blot flow, all the code here is actually being written by GPT4 itself. 
+I just asked how I wanted this to work and guided GPT into writing the code and debugging.
 
 This is not meant to be something serious, just something you can play with to understand a bit how Embedding works.
 

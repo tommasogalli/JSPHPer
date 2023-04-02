@@ -3,9 +3,6 @@
 require_once 'config.php';
 ini_set('memory_limit', '1024M'); // Set the memory limit to 1024MB
 
-// Load the API key from your config.php file
-$api_key = $api_key;
-
 header('Content-Type: application/json');
 
 try {

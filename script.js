@@ -82,8 +82,8 @@ async function fetchTextFileContents(urls) {
 async function fetchGPTResponse(prompt, additionalContexts) {
   const conversationHistoryWithAdditionalContext = [...conversationHistory];
 
-  const conversationWeight = 0.15;
-  const additionalContextWeight = 0.15;
+  const conversationWeight = 0.15; // customize this according to your data set
+  const additionalContextWeight = 0.15; // customize this according to your data set
 
   // Prepare the weighted chat history and additional context strings
   const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
@@ -198,7 +198,7 @@ async function searchTextFiles(query, documents) {
   }
 
   const queryEmbeddings = await fetchEmbedding(filteredNgrams); // Use filteredNgrams here
-  const chunkSize = 100;
+  const chunkSize = 200; // customize this according to your data set
 
   const scores = [];
 

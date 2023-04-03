@@ -5,7 +5,7 @@ This means that every time a user performs a query, JSPHPer will first look into
 
 JSPHPer also remembers previous conversations (of the same chat) so you can chat with it as in a conversation.
 
-By default it is setup to gives 15% weight to previous conversation 15% weight to context files and the rest from the model. You can customize that in the script.js and you should according to your needs.
+By default it is setup to give 15% weight to previous conversation 15% weight to context files and the rest from the model. You can customize that in the script.js and you should according to your needs.
 
 JSPHPer search works with Embedding API and custom query. This mean that out of the box is meant to be used in english. 
 You can use it in other languages but you should customize the prompt.

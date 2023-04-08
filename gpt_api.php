@@ -13,10 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $prompt = $data['prompt'];
     $conversation_history = $data['conversation_history'];
+    $additional_context = $data['additional_context'];
     $conversationWeight = $data['conversationWeight'];
     $additionalContextWeight = $data['additionalContextWeight'];
 
-    $response = call_openai_api($prompt, $conversation_history, $conversationWeight, $additionalContextWeight);
+    $response = call_openai_api($prompt, $additional_context, $conversation_history, $conversationWeight, $additionalContextWeight);
 
     echo json_encode($response);
 }
@@ -36,6 +37,7 @@ function call_openai_api($prompt, $conversation_history, $conversationWeight, $a
 
   $url = 'https://api.openai.com/v1/chat/completions'; // only for 3.5
   //$url = 'https://api.openai.com/v1/completions'; // only for da vinci
+
     $headers = [
         'Content-Type: application/json',
         'Authorization: Bearer ' . $api_key
@@ -53,14 +55,16 @@ function call_openai_api($prompt, $conversation_history, $conversationWeight, $a
 
     $messages[] = [
       'role' => 'user',
-      'content' => $prompt . " Use " . ($conversationWeight * 100) . "% past chat context, " . ($additionalContextWeight * 100) . "% additional context, and " . (100 - ($conversationWeight + $additionalContextWeight) * 100) . "% model knowledge."
+      'content' => $prompt //. " Use " . ($conversationWeight * 100) . "% past chat context, " . ($additionalContextWeight * 100) . "% additional context, and " . (100 - ($conversationWeight + $additionalContextWeight) * 100) . "% model knowledge."
     ];
 
     $body = json_encode([
         'model' => 'gpt-3.5-turbo', // gpt-3.5-turbo
         'messages' => $messages, // gpt-3.5-turbo
+
         //'model' => 'text-davinci-003', // da vinci
         //'prompt' => format_prompt_for_davinci($messages), // da vinci
+
         'max_tokens' => 500,
         'n' => 1,
         //'stop' => ["\n"],

@@ -9,62 +9,53 @@ const textFileUrls = [
 let conversationHistory = [];
 
 chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const message = userInput.value.trim();
+  const message = userInput.value.trim();
 
-    if (message === '') return;
+  if (message === '') return;
 
-    addMessageToChat('user', message);
-    userInput.value = '';
-    userInput.disabled = true;
+  addMessageToChat('user', message);
+  userInput.value = '';
+  userInput.disabled = true;
 
-    const additionalContexts = await fetchTextFileContents(textFileUrls);
-    const relevantContent = await searchTextFiles(message, additionalContexts);
+  const additionalContexts = await fetchTextFileContents(textFileUrls);
+  const relevantContent = await searchTextFiles(message, additionalContexts);
 
-    const maxWords = 2800;
-    const userQueryWords = countWords(message);
-    const availableWords = maxWords - userQueryWords;
+  const maxWords = 2800;
+  const userQueryWords = countWords(message);
+  const availableWords = maxWords - userQueryWords;
 
-    let totalWords = 0;
-    const filteredContent = [];
-    for (const content of relevantContent) {
-        const words = countWords(content);
-        if (totalWords + words <= availableWords) {
-            totalWords += words;
-            filteredContent.push(content);
-        } else {
-            break;
-        }
-    }
+  let totalWords = 0;
+  const additional_context = relevantContent;
 
-    const gptPrompt = 'User: ' + message + '\n' + filteredContent.join('\n');
-    console.log("GPT Prompt:", gptPrompt);
+  console.log("Prompt:", message);
+  console.log("History:", conversationHistory);
+  console.log("Additional Context:", additional_context);
 
-    const gptResponse = await fetchGPTResponse(gptPrompt, conversationHistory);
+  const gptResponse = await fetchGPTResponse(message, additional_context, conversationHistory);
 
+  if (gptResponse.error) {
+    alert('Error occurred: ' + gptResponse.error);
+  } else {
+    addMessageToChat('gpt', gptResponse.response);
+    conversationHistory.push('User: ' + message, 'JSPHPer: ' + gptResponse.response);
+    console.log(conversationHistory);
+  }
 
-    if (gptResponse.error) {
-        alert('Error occurred: ' + gptResponse.error);
-    } else {
-        addMessageToChat('gpt', gptResponse.response);
-        conversationHistory.push('User: ' + message, 'JSPHPer: ' + gptResponse.response);
-        console.log(conversationHistory);
-    }
-
-    userInput.disabled = false;
+  userInput.disabled = false;
 });
 
 function addMessageToChat(sender, message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('chat-message');
-    messageDiv.innerHTML = `<span class="${sender === 'user' ? 'user-message' : 'gpt-message'}">${sender === 'user' ? 'You: ' : 'JSPHPer: '}</span>${message}`;
-    chatbox.appendChild(messageDiv);
-    chatbox.scrollTop = chatbox.scrollHeight;
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('chat-message');
+  messageDiv.innerHTML = `<span class="${sender === 'user' ? 'user-message' : 'gpt-message'}">${sender === 'user' ? 'You: ' : 'JSPHPer: '}</span>${message}`;
+  chatbox.appendChild(messageDiv);
+  chatbox.scrollTop = chatbox.scrollHeight;
 }
 
 function countWords(text) {
-    return text.trim().split(/\s+/).length;
+  return text.trim().split(/\s+/).length;
 }
 
 async function fetchTextFileContents(urls) {
@@ -79,23 +70,31 @@ async function fetchTextFileContents(urls) {
   return fileContents;
 }
 
-async function fetchGPTResponse(prompt, additionalContexts) {
-  const conversationHistoryWithAdditionalContext = [...conversationHistory];
+async function fetchGPTResponse(prompt, additional_context, conversationHistory) {
 
-  const conversationWeight = 0.15; // customize this according to your data set
-  const additionalContextWeight = 0.15; // customize this according to your data set
+  const conversationWeight = 0.15;
+  const additionalContextWeight = 0.15;
 
-  // Prepare the weighted chat history and additional context strings
-  const weightedChatHistory = conversationHistoryWithAdditionalContext.map(message => `User: ${message}`).join('\n');
-  const weightedAdditionalContext = additionalContexts.map((content, index) => `Additional Context ${index + 1}: ${content}`).join('\n');
+  const searchPrompt =
+  `This is the User Query:${prompt}\n
+  This is the Past Conversation History:${conversationHistory}\n
+  This is the Additional Context:${additional_context}\n
+  Please answer the user Query using, only if relevant with the query, the past conversation history and the additional context
+  Try to stick to ${conversationWeight * 100}% Past Conversation History, ${additionalContextWeight * 100}% Additional Context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.
+  The Addional context might be constructed with different pieces of information, make sure you use only the ones who match the user query, if something is not related don't use that.
+  When you answer the query User Query don't refer to the additional context, just answer.
+  If the query is not related to the context then just answer the query and ignore both Additional Context and Past Conversation.
+  `
 
-   const searchPrompt = `${weightedChatHistory}\n\n${weightedAdditionalContext}\n\nUser: ${prompt}\n\nFind relevant information in the Additional Context and answer the User query. Always mix what you know with what is in the Additional Context. Use ${conversationWeight * 100}% past chat context, ${additionalContextWeight * 100}% Additional context, and ${100 - (conversationWeight + additionalContextWeight) * 100}% model knowledge.\n`;
+  console.log("FinalPrompt:", searchPrompt);
+
   const response = await fetch('gpt_api.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       prompt: searchPrompt,
-      conversation_history: conversationHistoryWithAdditionalContext,
+      conversation_history: conversationHistory,
+      additional_context: additional_context,
       conversationWeight: conversationWeight,
       additionalContextWeight: additionalContextWeight,
     }),
@@ -161,11 +160,11 @@ function filterStopwords(terms) {
     'at', 'by', 'from', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'of', 'over', 'under', 'again', 'further', 'in', 'on', 'off', 'out', 'as',
     'i', 'me', 'my', 'myself', 'we', 'us', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'will', 'would', 'should', 'can', 'could', 'ought', "i'm", "you're", "he's", "she's", "it's", "we're", "they're", "i've", "you've", "we've", "they've", "i'd", "you'd", "he'd", "she'd", "we'd", "they'd", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll", "isn't", "aren't", "wasn't", "weren't", "haven't", "hasn't", "hadn't", "doesn't", "don't", "didn't", "won't", "wouldn't", "shan't", "shouldn't", "can't", "cannot", "couldn't", 'mustn', "let's", 'ought', "that's", "who's", "what's", "here's", "there's", "when's", "where's", "why's", "how's", 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each',
     'few', 'more', 'most', 'several', 'some', 'such', 'only', 'own', 'other', 'than', 'too', 'very', 's', 't', 'just', 'don', "don't", 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't", 'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't",
-];
+  ];
 
-const strippedTerms = terms.map(term => term.replace(/[^\w\s?]/g, '').toLowerCase());
-console.log(terms.filter(term => !stopwords.includes(term.toLowerCase())));
-return terms.filter(term => !stopwords.includes(term.toLowerCase()));
+  const strippedTerms = terms.map(term => term.replace(/[^\w\s?]/g, '').toLowerCase());
+  console.log(terms.filter(term => !stopwords.includes(term.toLowerCase())));
+  return terms.filter(term => !stopwords.includes(term.toLowerCase()));
 }
 
 function getChunks(text, n) {
@@ -185,20 +184,19 @@ async function searchTextFiles(query, documents) {
   // Include unigrams, bigrams, and trigrams
   const queryNgrams = [
     ...query.split(/\s+/),
-  //  ...getNgrams(query, 2),
-  //  ...getNgrams(query, 3),
+    //  ...getNgrams(query, 2),
+    //  ...getNgrams(query, 3),
   ].filter((term) => term.trim() !== "");
 
   // Filter out stopwords from the n-grams
   const filteredNgrams = filterStopwords(queryNgrams);
 
-
   if (filteredNgrams.length === 0) {
-    return [];
+    return queryNgrams;
   }
 
   const queryEmbeddings = await fetchEmbedding(filteredNgrams); // Use filteredNgrams here
-  const chunkSize = 200; // customize this according to your data set
+  const chunkSize = 100;
 
   const scores = [];
 
@@ -250,20 +248,24 @@ async function searchTextFiles(query, documents) {
     let k=1;
     // Log the total score of each chunk
     chunkScores.forEach((totalScore, chunk) => {
-      console.log(`Chunk ${k}, Total Score: ${totalScore}`);
-      //console.log(`Chunk ${k}:${chunk}, Total Score: ${totalScore}`);
+      let scorenew = totalScore/filteredNgrams.length;
+      console.log(`Chunk ${k}, Total Score: ${scorenew}`);
       k++;
     });
 
     scores.push({ ...doc, score: maxScore, snippet: bestChunk });
   }
 
-  const similarityThreshold = 0;
+  console.log("Scores:", scores); // Log the scores before filtering
+  const similarityThreshold = 0.75;
+
   const filteredScores = scores.filter((item) => item.score > similarityThreshold);
+  console.log(`FS`, filteredScores);
 
   const rankedDocuments = filteredScores
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 3);
 
+  console.log("Ranked Documents:", rankedDocuments);
   return rankedDocuments.map((item) => item.snippet);
 }

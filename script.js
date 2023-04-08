@@ -3,7 +3,19 @@ const chatbox = document.getElementById('chatbox');
 const userInput = document.getElementById('user-input');
 
 const textFileUrls = [
-    'context/example.txt',
+  '/OpenAI/context/approach.txt',
+  '/OpenAI/context/attribution.txt',
+  '/OpenAI/context/auction.txt',
+  '/OpenAI/context/brandlift.txt',
+  '/OpenAI/context/capi.txt',
+  '/OpenAI/context/conversionlift.txt',
+  '/OpenAI/context/future.txt',
+  '/OpenAI/context/geolift.txt',
+  '/OpenAI/context/measurementvsreporting.txt',
+  '/OpenAI/context/mmm.txt',
+  '/OpenAI/context/pet.txt',
+  '/OpenAI/context/solutions.txt',
+  '/OpenAI/context/truevalue.txt',
 ];
 
 let conversationHistory = [];
@@ -181,12 +193,14 @@ const embeddingCache = {};
 async function searchTextFiles(query, documents) {
   const queryEmbedding = await fetchEmbedding([query]);
 
-  // Include unigrams, bigrams, and trigrams
-  const queryNgrams = [
-    ...query.split(/\s+/),
+  // If you want to search single terms separatley Include unigrams, bigrams, and trigrams
+  //const queryNgrams = [
+  //  ...query.split(/\s+/),
     //  ...getNgrams(query, 2),
     //  ...getNgrams(query, 3),
-  ].filter((term) => term.trim() !== "");
+  //].filter((term) => term.trim() !== "");
+
+  const queryNgrams = [query];
 
   // Filter out stopwords from the n-grams
   const filteredNgrams = filterStopwords(queryNgrams);

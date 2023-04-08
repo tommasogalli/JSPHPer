@@ -3,19 +3,7 @@ const chatbox = document.getElementById('chatbox');
 const userInput = document.getElementById('user-input');
 
 const textFileUrls = [
-  '/OpenAI/context/approach.txt',
-  '/OpenAI/context/attribution.txt',
-  '/OpenAI/context/auction.txt',
-  '/OpenAI/context/brandlift.txt',
-  '/OpenAI/context/capi.txt',
-  '/OpenAI/context/conversionlift.txt',
-  '/OpenAI/context/future.txt',
-  '/OpenAI/context/geolift.txt',
-  '/OpenAI/context/measurementvsreporting.txt',
-  '/OpenAI/context/mmm.txt',
-  '/OpenAI/context/pet.txt',
-  '/OpenAI/context/solutions.txt',
-  '/OpenAI/context/truevalue.txt',
+    'context/example.txt',
 ];
 
 let conversationHistory = [];
